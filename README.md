@@ -1,5 +1,14 @@
-HGVS variant name parsing and generation
-========================================
+# HGVSG Parser
+
+[PyHGVS](https://github.com/counsyl/hgvs) is good but abandoned;
+[the last commit](https://github.com/counsyl/hgvs/commit/ab9b95f21466fbb3265b5bd818ccab0c926ca59f)
+was over 5 years ago, and as the parent company counsyl
+[was bought out](https://www.genomeweb.com/business-news/myriad-genetics-acquire-counsyl-375m)
+at a similar time, it's unlikely to be updated ever again.
+
+The original README is below:
+
+# HGVS variant name parsing and generation
 
 The Human Genome Variation Society (HGVS) promotes the discovery and
 sharing of genetic variation in the human population.  As part of facilitating
