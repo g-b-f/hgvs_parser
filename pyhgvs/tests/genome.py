@@ -1,7 +1,7 @@
 import itertools
 import os
 from dataclasses import dataclass
-from typing import Any, Mapping, TextIO, cast
+from typing import Any, Mapping, TextIO, cast, Union, Optional
 
 from ..variants import revcomp
 
@@ -48,7 +48,7 @@ class MockChromosome:
 
 class MockGenome:
     def __init__(
-        self, lookup=None | Mapping, filename=None, db_filename=None, default_seq=None
+        self, lookup: Optional[Mapping]=None, filename=None, db_filename=None, default_seq=None
     ):
         """
         A mock genome object that provides a pygr compatible interface.
@@ -113,7 +113,7 @@ class MockGenome:
                         f"Sequence not in test data: {chrom}:{start}-{end}"
                     )
 
-    def read(self, filename: str | TextIO):
+    def read(self, filename: Union[str, TextIO]):
         """Read a sequence lookup table from a file.
 
         filename: a filename string or file stream.
@@ -131,7 +131,7 @@ class MockGenome:
             if chrom not in self._lookup:
                 self._chroms[chrom] = MockChromosome(chrom, self)
 
-    def write(self, filename: str | TextIO):
+    def write(self, filename: Union[str, TextIO]):
         """Write a sequence lookup table to file."""
         if hasattr(filename, "write"):
             out = cast(TextIO, filename)

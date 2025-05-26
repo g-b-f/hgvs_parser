@@ -94,7 +94,7 @@ BASES = BASE+
 """
 
 import re
-from typing import Literal
+from typing import Literal, Optional
 
 from .models import Transcript
 from .variants import justify_indel, normalize_variant, revcomp
@@ -436,7 +436,7 @@ REFSEQ_PREFIX_LOOKUP = dict(
 )
 
 
-def get_refseq_type(name: str) -> str | None:
+def get_refseq_type(name: str) -> Optional[str]:
     """
     Return the RefSeq type for a refseq name.
     """
