@@ -37,7 +37,7 @@ class Transcript:
         tx_position: Position,
         cds_position: Position,
         is_default=False,
-        exons: list["Exon"]|None = None,
+        exons: list["Exon"] | None = None,
     ):
         self.name = name
         self.version = version

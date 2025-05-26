@@ -546,9 +546,13 @@ def cdna_to_genomic_coord(transcript, coord):
     elif coord.landmark == CDNA_STOP_CODON:
         if coord.coord < 0:
             raise ValueError(
-                "CDNACoord cannot have a negative coord and " "landmark CDNA_STOP_CODON"
+                "CDNACoord cannot have a negative coord and landmark CDNA_STOP_CODON"
             )
         pos = find_stop_codon(exons, transcript.cds_position) + coord.coord
+        if not transcript.is_coding:
+            if not transcript_strand:
+                pos = exons[-1].tx_position.chrom_start
+                return pos - coord.coord + 1
     else:
         raise ValueError('unknown CDNACoord landmark "%s"' % coord.landmark)
 
@@ -662,6 +666,26 @@ def genomic_to_cdna_coord(transcript, genomic_coord):
             ):
                 cdna_coord.coord -= stop_codon
                 cdna_coord.landmark = CDNA_STOP_CODON
+
+    else:  # non coding
+        if strand == "+":
+            # Detect if position is after last exon.
+            if genomic_coord > exons[-1].chrom_end:
+                cdna_coord.coord = genomic_coord - exons[-1].chrom_end
+                cdna_coord.landmark = CDNA_STOP_CODON
+            else:
+                # Detect if position is before first exon.
+                if genomic_coord <= exons[0].chrom_start:
+                    cdna_coord.coord -= 1
+        else:  # neg strand
+            # Detect if position is after last exon.
+            if genomic_coord <= exons[-1].chrom_start:
+                cdna_coord.coord = exons[-1].chrom_start - genomic_coord + 1
+                cdna_coord.landmark = CDNA_STOP_CODON
+            else:
+                # Detect if position is before first exon.
+                if genomic_coord >= exons[0].chrom_end:
+                    cdna_coord.coord -= 1
 
     return cdna_coord
 
