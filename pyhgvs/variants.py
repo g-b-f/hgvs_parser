@@ -2,7 +2,7 @@
 Methods for manipulating genetic variants.
 """
 
-from typing import Any, Literal, TypeAlias
+from typing import Any, Literal
 
 from .models import Position
 
@@ -18,8 +18,6 @@ _COMP = {
     "t": "a",
     "n": "n",
 }
-
-JustifyType: TypeAlias = Literal["left", "right"]
 
 
 def revcomp(seq: str) -> str:
@@ -61,7 +59,7 @@ def get_sequence_from_position(genome, position: Position) -> str:
 
 
 def justify_indel(
-    start: int, end: int, indel: str, seq: str, justify: JustifyType
+    start: int, end: int, indel: str, seq: str, justify: Literal["left", "right"]
 ) -> tuple[int, int, str]:
     """
     Justify an indel to the left or right along a sequence 'seq'.
@@ -103,7 +101,7 @@ def justify_genomic_indel(
     start: int,
     end: int,
     indel: str,
-    justify: JustifyType,
+    justify: Literal["left", "right"],
     flank_length=20,
 ):
     """
@@ -146,7 +144,7 @@ def normalize_variant(
     ref_sequence: str,
     alt_sequences: list[str],
     genome: Any,
-    justify: JustifyType = "left",
+    justify: Literal["left", "right"] = "left",
     flank_length=30,
 ):
     """
@@ -181,7 +179,7 @@ class NormalizedVariant:
         seq_5p="",
         seq_3p="",
         genome: Any = None,
-        justify: JustifyType = "left",
+        justify: Literal["left", "right"] = "left",
     ):
         """
         position: a 0-index genomic Position.
@@ -257,7 +255,7 @@ class NormalizedVariant:
             for i, allele in enumerate(self.alleles):
                 self.alleles[i] = allele[:-common_suffix]
 
-    def _align(self, justify: JustifyType):
+    def _align(self, justify: Literal["left", "right"]):
         """
         Align variant as far to the left or right as possible.
         """

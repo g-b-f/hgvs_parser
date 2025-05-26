@@ -94,7 +94,7 @@ BASES = BASE+
 """
 
 import re
-from typing import Literal, TypeAlias
+from typing import Literal
 
 from .models import Transcript
 from .variants import justify_indel, normalize_variant, revcomp
@@ -102,10 +102,6 @@ from .variants import justify_indel, normalize_variant, revcomp
 CHROM_PREFIX = "chr"
 CDNA_START_CODON = "cdna_start"
 CDNA_STOP_CODON = "cdna_stop"
-
-strDict: TypeAlias = dict[str, str]
-JustifyType: TypeAlias = Literal["left", "right"]
-
 
 class HGVSRegex:
     """
@@ -954,7 +950,7 @@ class HGVSName:
         for regex in self._regexes.PEP_ALLELE_REGEXES:
             match = re.match(regex, details)
             if match:
-                groups: strDict = match.groupdict()
+                groups: dict[str, str] = match.groupdict()
 
                 # Parse mutation type.
                 if groups.get("delins"):
@@ -1358,7 +1354,7 @@ def hgvs_justify_indel(chrom, offset, ref, alt, strand, genome):
         cds_offset_end = cds_offset + len(indel_seq)
 
     # Now 3' justify (vs. cDNA not genome) the offset
-    justify: JustifyType = "right" if strand == "+" else "left"
+    justify: Literal["left", "right"] = "right" if strand == "+" else "left"
     offset, _, indel_seq = justify_indel(
         cds_offset, cds_offset_end, indel_seq, seq, justify
     )
