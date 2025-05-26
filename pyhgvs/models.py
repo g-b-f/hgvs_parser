@@ -3,6 +3,7 @@ Models for representing genomic elements.
 """
 
 from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
@@ -32,12 +33,12 @@ class Transcript:
     def __init__(
         self,
         name: str,
-        version: int | None,
+        version: Optional[int],
         gene: str,
         tx_position: Position,
         cds_position: Position,
         is_default=False,
-        exons: list["Exon"] | None = None,
+        exons: Optional[list["Exon"]] = None,
     ):
         self.name = name
         self.version = version
@@ -109,7 +110,7 @@ class Exon:
         self.exon_number = exon_number
         self.name = f"{self.transcript.name}.{self.exon_number}"
 
-    def get_as_interval(self, coding_only=False) -> BED6Interval | None:
+    def get_as_interval(self, coding_only=False) -> Optional[BED6Interval]:
         """Returns the coding region for this exon as a BED6Interval.
 
         This function returns a BED6Interval objects containing  position

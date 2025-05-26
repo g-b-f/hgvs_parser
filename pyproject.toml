@@ -3,15 +3,15 @@ name = "pyhgvs2"
 version = "1.0.0"
 description = "Fork of pyhgvs"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = []
 
 [dependency-groups]
 dev = [
-    "pyfaidx>=0.8.1.4",
-    "pytest-mock>=3.14.0",
-    "ruff>=0.11.11",
-    "mypy>=1.15.0"
+    "pyfaidx==0.8.1.*",
+    "pytest-mock==3.14.*",
+    "ruff==0.11.*",
+    "mypy==1.15.*"
 ]
 
 [tool.mypy]
@@ -23,3 +23,6 @@ exclude = [
 
 [tool.ruff]
 extend-include = ["bin/"]
+
+[tool.pytest.ini_options]
+filterwarnings = ["error"]

@@ -1,4 +1,4 @@
-"""
+r"""
 Methods for manipulating HGVS names
 
 Recommendations for the HGVS naming standard:
@@ -86,7 +86,7 @@ COORD = NUMBER
 OFFSET_PREFIX = '-' | '+'
 OFFSET = NUMBER
 
-# Primatives:
+# Primitives:
 NUMBER = \d+
 BASE = [ACGT]
 BASES = BASE+
@@ -94,7 +94,7 @@ BASES = BASE+
 """
 
 import re
-from typing import Literal, TypeAlias
+from typing import Literal, Optional
 
 from .models import Transcript
 from .variants import justify_indel, normalize_variant, revcomp
@@ -103,10 +103,6 @@ CHROM_PREFIX = "chr"
 CDNA_START_CODON = "cdna_start"
 CDNA_STOP_CODON = "cdna_stop"
 
-strDict: TypeAlias = dict[str, str]
-JustifyType: TypeAlias = Literal["left", "right"]
-
-
 class HGVSRegex:
     """
     All regular expression for HGVS names.
@@ -114,8 +110,8 @@ class HGVSRegex:
 
     # DNA syntax
     # http://www.hgvs.org/mutnomen/standards.html#nucleotide
-    BASE = "[acgtbdhkmnrsvwyACGTBDHKMNRSVWY]|\d+"
-    BASES = "[acgtbdhkmnrsvwyACGTBDHKMNRSVWY]+|\d+"
+    BASE = r"[acgtbdhkmnrsvwyACGTBDHKMNRSVWY]|\d+"
+    BASES = r"[acgtbdhkmnrsvwyACGTBDHKMNRSVWY]+|\d+"
     DNA_REF = "(?P<ref>" + BASES + ")"
     DNA_ALT = "(?P<alt>" + BASES + ")"
 
@@ -128,22 +124,22 @@ class HGVSRegex:
     INV = "(?P<mutation_type>inv)"
 
     # Simple coordinate syntax
-    COORD_START = "(?P<start>\d+)"
-    COORD_END = "(?P<end>\d+)"
+    COORD_START = r"(?P<start>\d+)"
+    COORD_END = r"(?P<end>\d+)"
     COORD_RANGE = COORD_START + "_" + COORD_END
 
     # cDNA coordinate syntax
     CDNA_COORD = (
-        "(?P<coord_prefix>|-|\*)(?P<coord>\d+)"
-        "((?P<offset_prefix>-|\+)(?P<offset>\d+))?"
+        r"(?P<coord_prefix>|-|\*)(?P<coord>\d+)"
+        r"((?P<offset_prefix>-|\+)(?P<offset>\d+))?"
     )
     CDNA_START = (
-        "(?P<start>(?P<start_coord_prefix>|-|\*)(?P<start_coord>\d+)"
-        "((?P<start_offset_prefix>-|\+)(?P<start_offset>\d+))?)"
+        r"(?P<start>(?P<start_coord_prefix>|-|\*)(?P<start_coord>\d+)"
+        r"((?P<start_offset_prefix>-|\+)(?P<start_offset>\d+))?)"
     )
     CDNA_END = (
         r"(?P<end>(?P<end_coord_prefix>|-|\*)(?P<end_coord>\d+)"
-        "((?P<end_offset_prefix>-|\+)(?P<end_offset>\d+))?)"
+        r"((?P<end_offset_prefix>-|\+)(?P<end_offset>\d+))?)"
     )
     CDNA_RANGE = CDNA_START + "_" + CDNA_END
 
@@ -181,7 +177,7 @@ class HGVSRegex:
     PEP_REF2 = "(?P<ref2>" + PEP + ")"
     PEP_ALT = "(?P<alt>" + PEP + ")"
 
-    PEP_EXTRA = "(?P<extra>(|=|\?)(|fs))"
+    PEP_EXTRA = r"(?P<extra>(|=|\?)(|fs))"
 
     # Peptide allele syntax
     PEP_ALLELE = [
@@ -263,11 +259,11 @@ class ChromosomeSubset:
             return self.genome.genome[self.genome.seqid][start:end]
         else:
             raise TypeError(
-                "Expected a slice object but " "received a {0}.".format(type(key))
+                f"Expected a slice object but received a {type(key)}."
             )
 
     def __repr__(self):
-        return 'ChromosomeSubset("%s")' % self.name
+        return f'ChromosomeSubset("{self.name}")'
 
 
 class GenomeSubset:
@@ -355,7 +351,7 @@ class CDNACoord:
 
         match = re.match(r"(|-|\*)(\d+)((-|\+)(\d+))?", coord_text)
         if not match:
-            raise ValueError("unknown coordinate format '%s'" % coord_text)
+            raise ValueError(f"unknown coordinate format '{coord_text}'")
         coord_prefix, coord, _, offset_prefix, offset = match.groups()
 
         self.coord = int(coord)
@@ -366,7 +362,7 @@ class CDNACoord:
         elif offset_prefix == "+" or offset is None:
             pass
         else:
-            raise ValueError("unknown offset_prefix '%s'" % offset_prefix)
+            raise ValueError(f"unknown offset_prefix '{offset_prefix}'")
 
         if coord_prefix == "":
             self.landmark = CDNA_START_CODON
@@ -376,7 +372,7 @@ class CDNACoord:
         elif coord_prefix == "*":
             self.landmark = CDNA_STOP_CODON
         else:
-            raise ValueError("unknown coord_prefix '%s'" % coord_prefix)
+            raise ValueError(f"unknown coord_prefix '{coord_prefix}'")
         return self
 
     def __str__(self):
@@ -389,16 +385,15 @@ class CDNACoord:
             coord_prefix = ""
 
         if self.offset < 0:
-            offset = "%d" % self.offset
+            offset = str(self.offset)
         elif self.offset > 0:
-            offset = "+%d" % self.offset
+            offset = "+"+str(self.offset)
         else:
             offset = ""
 
-        return "%s%d%s" % (coord_prefix, self.coord, offset)
+        return f"{coord_prefix}{self.coord}{offset}"
 
     def __eq__(self, other):
-        """Equality operator."""
         return (self.coord, self.offset, self.landmark) == (
             other.coord,
             other.offset,
@@ -410,9 +405,9 @@ class CDNACoord:
         Returns a string representation of a cDNA coordinate.
         """
         if self.landmark != CDNA_START_CODON:
-            return "CDNACoord(%d, %d, '%s')" % (self.coord, self.offset, self.landmark)
+            return f"CDNACoord({self.coord}, {self.offset}, '{self.landmark}')"
         else:
-            return "CDNACoord(%d, %d)" % (self.coord, self.offset)
+            return f"CDNACoord({self.coord}, {self.offset})"
 
 
 # The RefSeq standard for naming contigs/transcripts/proteins:
@@ -441,7 +436,7 @@ REFSEQ_PREFIX_LOOKUP = dict(
 )
 
 
-def get_refseq_type(name: str) -> str | None:
+def get_refseq_type(name: str) -> Optional[str]:
     """
     Return the RefSeq type for a refseq name.
     """
@@ -554,7 +549,7 @@ def cdna_to_genomic_coord(transcript, coord):
                 pos = exons[-1].tx_position.chrom_start
                 return pos - coord.coord + 1
     else:
-        raise ValueError('unknown CDNACoord landmark "%s"' % coord.landmark)
+        raise ValueError(f'unknown CDNACoord landmark "{coord.landmark}"')
 
     # 5' flanking sequence.
     if pos < 1:
@@ -730,9 +725,9 @@ def matches_ref_allele(hgvs, genome, transcript=None):
 class InvalidHGVSName(ValueError):
     def __init__(self, name="", part="name", reason=""):
         if name:
-            message = 'Invalid HGVS %s "%s"' % (part, name)
+            message = f'Invalid HGVS {part} "{name}"'
         else:
-            message = "Invalid HGVS %s" % part
+            message = f"Invalid HGVS {part}"
         if reason:
             message += ": " + reason
         super(InvalidHGVSName, self).__init__(message)
@@ -831,7 +826,7 @@ class HGVSName:
 
         # Transcript and gene given with parens.
         # example: NM_007294.3(BRCA1):c.2207A>C
-        match = re.match("^(?P<transcript>[^(]+)\((?P<gene>[^)]+)\)$", prefix)
+        match = re.match(r"^(?P<transcript>[^(]+)\((?P<gene>[^)]+)\)$", prefix)
         if match:
             self.transcript = match.group("transcript")
             self.gene = match.group("gene")
@@ -839,7 +834,7 @@ class HGVSName:
 
         # Transcript and gene given with braces.
         # example: BRCA1{NM_007294.3}:c.2207A>C
-        match = re.match("^(?P<gene>[^{]+)\{(?P<transcript>[^}]+)\}$", prefix)
+        match = re.match(r"^(?P<gene>[^{]+)\{(?P<transcript>[^}]+)\}$", prefix)
         if match:
             self.transcript = match.group("transcript")
             self.gene = match.group("gene")
@@ -894,7 +889,7 @@ class HGVSName:
         elif kind == "g":
             self.parse_genome(details)
         else:
-            raise NotImplementedError("unknown kind: %s" % allele)
+            raise NotImplementedError(f"unknown kind: {allele}")
 
     def parse_cdna(self, details: str):
         """
@@ -955,7 +950,7 @@ class HGVSName:
         for regex in self._regexes.PEP_ALLELE_REGEXES:
             match = re.match(regex, details)
             if match:
-                groups: strDict = match.groupdict()
+                groups: dict[str, str] = match.groupdict()
 
                 # Parse mutation type.
                 if groups.get("delins"):
@@ -1039,9 +1034,9 @@ class HGVSName:
 
     def __repr__(self):
         try:
-            return "HGVSName('%s')" % self.format()
+            return f"HGVSName('{self.format()}')"
         except NotImplementedError:
-            return "HGVSName('%s')" % self.name
+            return f"HGVSName('{self.name}')"
 
     def __unicode__(self):
         return self.format()
@@ -1056,7 +1051,7 @@ class HGVSName:
         elif self.kind == "g":
             allele = "g." + self.format_genome()
         else:
-            raise NotImplementedError("not implemented: '%s'" % self.kind)
+            raise NotImplementedError(f"not implemented: '{self.kind}'")
 
         prefix = self.format_prefix(use_gene=use_gene) if use_prefix else ""
 
@@ -1080,7 +1075,7 @@ class HGVSName:
 
         if self.transcript:
             if use_gene and self.gene:
-                return "%s(%s)" % (self.transcript, self.gene)
+                return f"{self.transcript}({self.gene})"
             else:
                 return self.transcript
         else:
@@ -1097,7 +1092,7 @@ class HGVSName:
         if self.cdna_start == self.cdna_end:
             return str(self.cdna_start)
         else:
-            return "%s_%s" % (self.cdna_start, self.cdna_end)
+            return f"{self.cdna_start}_{self.cdna_end}"
 
     def format_dna_allele(self):
         """
@@ -1132,7 +1127,7 @@ class HGVSName:
             return self.mutation_type
 
         else:
-            raise AssertionError("unknown mutation type: '%s'" % self.mutation_type)
+            raise AssertionError(f"unknown mutation type: '{self.mutation_type}'")
 
     def format_cdna(self):
         """
@@ -1190,11 +1185,10 @@ class HGVSName:
         """
         Generate HGVS cDNA coordinates string.
         """
-        # Format coordinates.
         if self.start == self.end:
             return str(self.start)
         else:
-            return "%s_%s" % (self.start, self.end)
+            return f"{self.start}_{self.end}"
 
     def format_genome(self):
         """
@@ -1239,9 +1233,7 @@ class HGVSName:
 
         else:
             raise NotImplementedError(
-                'Coordinates are not available for this kind of HGVS name "%s"'
-                % self.kind
-            )
+                f'Coordinates are not available for this kind of HGVS name "{self.kind}"')
 
         return chrom, start, end
 
@@ -1256,7 +1248,7 @@ class HGVSName:
             # Indels have left-padding.
             start -= 1
         else:
-            raise NotImplementedError("Unknown mutation_type '%s'" % self.mutation_type)
+            raise NotImplementedError(f"Unknown mutation_type '{self.mutation_type}'")
         return chrom, start, end
 
     def get_ref_alt(self, is_forward_strand=True):
@@ -1362,7 +1354,7 @@ def hgvs_justify_indel(chrom, offset, ref, alt, strand, genome):
         cds_offset_end = cds_offset + len(indel_seq)
 
     # Now 3' justify (vs. cDNA not genome) the offset
-    justify: JustifyType = "right" if strand == "+" else "left"
+    justify: Literal["left", "right"] = "right" if strand == "+" else "left"
     offset, _, indel_seq = justify_indel(
         cds_offset, cds_offset_end, indel_seq, seq, justify
     )

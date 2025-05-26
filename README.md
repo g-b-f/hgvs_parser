@@ -1,4 +1,4 @@
-# HGVSG Parser
+# PyHGVS2
 
 [PyHGVS](https://github.com/counsyl/hgvs) is good but abandoned;
 [the last commit](https://github.com/counsyl/hgvs/commit/ab9b95f21466fbb3265b5bd818ccab0c926ca59f)
