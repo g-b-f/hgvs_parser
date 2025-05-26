@@ -2,12 +2,9 @@
 Helper functions.
 """
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from typing import Mapping
 
-from .models import Exon
-from .models import Position
-from .models import Transcript
+from .models import Exon, Position, Transcript
 
 
 def read_refgene(infile):
@@ -37,84 +34,90 @@ def read_refgene(infile):
     """
     for line in infile:
         # Skip comments.
-        if line.startswith('#'):
+        if line.startswith("#"):
             continue
-        row = line.rstrip('\n').split('\t')
+        row = line.rstrip("\n").split("\t")
         if len(row) != 16:
             raise ValueError(
-                'File has incorrect number of columns '
-                'in at least one line.')
+                "File has incorrect number of columns " "in at least one line."
+            )
 
         # Skip trailing ,
-        exon_starts = list(map(int, row[9].split(',')[:-1]))
-        exon_ends = list(map(int, row[10].split(',')[:-1]))
-        exon_frames = list(map(int, row[15].split(',')[:-1]))
+        exon_starts = list(map(int, row[9].split(",")[:-1]))
+        exon_ends = list(map(int, row[10].split(",")[:-1]))
+        exon_frames = list(map(int, row[15].split(",")[:-1]))
         exons = list(zip(exon_starts, exon_ends))
 
         yield {
-            'chrom': row[2],
-            'start': int(row[4]),
-            'end': int(row[5]),
-            'id': row[1],
-            'strand': row[3],
-            'cds_start': int(row[6]),
-            'cds_end': int(row[7]),
-            'gene_name': row[12],
-            'exons': exons,
-            'exon_frames': exon_frames
+            "chrom": row[2],
+            "start": int(row[4]),
+            "end": int(row[5]),
+            "id": row[1],
+            "strand": row[3],
+            "cds_start": int(row[6]),
+            "cds_end": int(row[7]),
+            "gene_name": row[12],
+            "exons": exons,
+            "exon_frames": exon_frames,
         }
 
 
-def make_transcript(transcript_json):
+def make_transcript(transcript_json: Mapping) -> Transcript:
     """
     Make a Transcript form a JSON object.
     """
 
-    transcript_name = transcript_json['id']
-    if '.' in transcript_name:
-        name, version = transcript_name.split('.')
+    transcript_name = transcript_json["id"]
+    if "." in transcript_name:
+        name, version = transcript_name.split(".")
     else:
         name, version = transcript_name, None
 
     transcript = Transcript(
         name=name,
         version=int(version) if version is not None else None,
-        gene=transcript_json['gene_name'],
+        gene=transcript_json["gene_name"],
         tx_position=Position(
-            transcript_json['chrom'],
-            transcript_json['start'],
-            transcript_json['end'],
-            transcript_json['strand'] == '+'),
+            transcript_json["chrom"],
+            transcript_json["start"],
+            transcript_json["end"],
+            transcript_json["strand"] == "+",
+        ),
         cds_position=Position(
-            transcript_json['chrom'],
-            transcript_json['cds_start'],
-            transcript_json['cds_end'],
-            transcript_json['strand'] == '+'))
+            transcript_json["chrom"],
+            transcript_json["cds_start"],
+            transcript_json["cds_end"],
+            transcript_json["strand"] == "+",
+        ),
+    )
 
-    exons = transcript_json['exons']
+    exons = transcript_json["exons"]
     if not transcript.tx_position.is_forward_strand:
         exons = reversed(exons)
 
     for exon_number, (exon_start, exon_end) in enumerate(exons, 1):
         transcript.exons.append(
-            Exon(transcript=transcript,
-                 tx_position=Position(
-                     transcript_json['chrom'],
-                     exon_start,
-                     exon_end,
-                     transcript_json['strand'] == '+'),
-                 exon_number=exon_number))
+            Exon(
+                transcript=transcript,
+                tx_position=Position(
+                    transcript_json["chrom"],
+                    exon_start,
+                    exon_end,
+                    transcript_json["strand"] == "+",
+                ),
+                exon_number=exon_number,
+            )
+        )
 
     return transcript
 
 
-def read_transcripts(refgene_file):
+def read_transcripts(refgene_file) -> dict[str, Transcript]:
     """
     Read all transcripts in a RefGene file.
     """
     transcripts = {}
-    for trans in (make_transcript(record)
-                  for record in read_refgene(refgene_file)):
+    for trans in (make_transcript(record) for record in read_refgene(refgene_file)):
         transcripts[trans.name] = trans
         transcripts[trans.full_name] = trans
 

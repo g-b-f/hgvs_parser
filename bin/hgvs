@@ -5,25 +5,26 @@ import logging
 import sys
 
 from pyfaidx import Fasta
+
 import pyhgvs
 from pyhgvs import parse_hgvs_name
-from pyhgvs.variants import normalize_variant
 from pyhgvs.utils import read_transcripts
-
+from pyhgvs.variants import normalize_variant
 
 # Setup logging.
 logger = logging.getLogger("clinvar")
 formatter = logging.Formatter(
-    '%(filename)s:%(lineno)s - %(name)s - %(levelname)s - %(message)s')
+    "%(filename)s:%(lineno)s - %(name)s - %(levelname)s - %(message)s"
+)
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # Command line options.
 options = argparse.ArgumentParser()
-options.add_argument('-f', '--fasta', required=True)
-options.add_argument('-t', '--trans', required=True)
-options.add_argument('hgvs_name', nargs='*')
+options.add_argument("-f", "--fasta", required=True)
+options.add_argument("-t", "--trans", required=True)
+options.add_argument("hgvs_name", nargs="*")
 
 
 def get_sequence(genome, chrom, start, end):
@@ -32,12 +33,12 @@ def get_sequence(genome, chrom, start, end):
     Coordinates are 0-based, end-exclusive.
     """
     if start >= end:
-        return ''
+        return ""
     else:
         return str(genome[str(chrom)][start:end]).upper()
 
 
-def get_transcript(name):
+def get_transcript(name: str):
     """Get a transcript using its name or a gene name"""
     transcript = transcripts.get(name)
     if not transcript:
@@ -53,31 +54,38 @@ def determine_allele(genome, hgvs_name):
     # Parse HGVS cDNA name.
     try:
         chrom, start, ref, alt = parse_hgvs_name(
-            hgvs_name, genome, get_transcript=get_transcript)
-    except (NotImplementedError, AssertionError, KeyError, ValueError,
-            pyhgvs.InvalidHGVSName) as error:
+            hgvs_name, genome, get_transcript=get_transcript
+        )
+    except (
+        NotImplementedError,
+        AssertionError,
+        KeyError,
+        ValueError,
+        pyhgvs.InvalidHGVSName,
+    ) as error:
         messages.append(str(error))
         return None, messages
 
     # Validate reference allele.
-    genome_ref = get_sequence(
-        genome, chrom, start - 1, start - 1 + len(ref))
+    genome_ref = get_sequence(genome, chrom, start - 1, start - 1 + len(ref))
     if ref != genome_ref:
         messages.append(
-            'Reference allele does not match genome. Ignoring allele: '
-            '%s != %s' % (ref, genome_ref))
+            "Reference allele does not match genome. Ignoring allele: "
+            "%s != %s" % (ref, genome_ref)
+        )
 
     # Normalize variant.
     try:
         chrom, start, ref, alts = normalize_variant(
-            chrom, start, ref, [alt], genome).variant
+            chrom, start, ref, [alt], genome
+        ).variant
     except:
-        messages.append('Variant normalization failed')
+        messages.append("Variant normalization failed")
 
     return (chrom, start, ref, alts[0]), messages
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = options.parse_args()
 
     # Read genome and transcripts.
@@ -85,23 +93,24 @@ if __name__ == '__main__':
     with open(args.trans) as infile:
         transcripts = read_transcripts(infile)
 
-    gene2transcript = {transcript.gene.name: transcript
-                       for transcript in transcripts.values()}
+    gene2transcript = {
+        transcript.gene.name: transcript for transcript in transcripts.values()
+    }
 
     if args.hgvs_name:
         hgvs_names = args.hgvs_name
     else:
         hgvs_names = (line.rstrip() for line in sys.stdin)
 
-    headers = ['name', 'chrom', 'start', 'ref', 'alt', 'messages']
-    print('\t'.join(map(str, headers)))
+    headers = ["name", "chrom", "start", "ref", "alt", "messages"]
+    print("\t".join(map(str, headers)))
 
     for allele_name in hgvs_names:
         allele, messages = determine_allele(genome, allele_name)
-        message = '|'.join(messages)
+        message = "|".join(messages)
         if allele:
             chrom, start, ref, alt = allele
             row = [allele_name, chrom, start, ref, alt, message]
         else:
-            row = [allele_name, '', '', '', '', message]
-        print('\t'.join(map(str, row)))
+            row = [allele_name, "", "", "", "", message]
+        print("\t".join(map(str, row)))

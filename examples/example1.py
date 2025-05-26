@@ -26,18 +26,17 @@ The following output should be displayed:
   ('NM_000352.3', 'c', '>', CDNACoord(215, -10), CDNACoord(215, -10), 'A', 'G')
 
 """
-from __future__ import print_function
 
-from __future__ import unicode_literals
-import pyhgvs as hgvs
-import pyhgvs.utils as hgvs_utils
 from pyfaidx import Fasta
 
+import pyhgvs as hgvs
+import pyhgvs.utils as hgvs_utils
+
 # Read genome sequence using pyfaidx.
-genome = Fasta('/tmp/hg19.fa')
+genome = Fasta("/tmp/hg19.fa")
 
 # Read RefSeq transcripts into a python dict.
-with open('pyhgvs/data/genes.refGene') as infile:
+with open("pyhgvs/data/genes.refGene") as infile:
     transcripts = hgvs_utils.read_transcripts(infile)
 
 
@@ -48,7 +47,8 @@ def get_transcript(name):
 
 # Parse the HGVS name into genomic coordinates and alleles.
 chrom, offset, ref, alt = hgvs.parse_hgvs_name(
-    'NM_000352.3:c.215A>G', genome, get_transcript=get_transcript)
+    "NM_000352.3:c.215A>G", genome, get_transcript=get_transcript
+)
 print(chrom, offset, ref, alt)
 # Returns variant in VCF style: ('chr11', 17496508, 'T', 'C')
 # Notice that since the transcript is on the negative strand, the alleles
@@ -56,15 +56,14 @@ print(chrom, offset, ref, alt)
 
 
 # Format an HGVS name.
-chrom, offset, ref, alt = ('chr11', 17496508, 'T', 'C')
-transcript = get_transcript('NM_000352.3')
-hgvs_name = hgvs.format_hgvs_name(
-    chrom, offset, ref, alt, genome, transcript)
+chrom, offset, ref, alt = ("chr11", 17496508, "T", "C")
+transcript = get_transcript("NM_000352.3")
+hgvs_name = hgvs.format_hgvs_name(chrom, offset, ref, alt, genome, transcript)
 print(hgvs_name)
 # Returns 'NM_000352.3(ABCC8):c.215A>G'
 
 
-hgvs_name = hgvs.HGVSName('NM_000352.3:c.215-10A>G')
+hgvs_name = hgvs.HGVSName("NM_000352.3:c.215-10A>G")
 # fields of the HGVS name are available as attributes:
 #
 # hgvs_name.transcript = 'NM_000352.3'
@@ -75,10 +74,14 @@ hgvs_name = hgvs.HGVSName('NM_000352.3:c.215-10A>G')
 # hgvs_name.ref_allele = 'A'
 # hgvs_name.alt_allele = 'G'
 
-print((hgvs_name.transcript,
-       hgvs_name.kind,
-       hgvs_name.mutation_type,
-       hgvs_name.cdna_start,
-       hgvs_name.cdna_end,
-       hgvs_name.ref_allele,
-       hgvs_name.alt_allele))
+print(
+    (
+        hgvs_name.transcript,
+        hgvs_name.kind,
+        hgvs_name.mutation_type,
+        hgvs_name.cdna_start,
+        hgvs_name.cdna_end,
+        hgvs_name.ref_allele,
+        hgvs_name.alt_allele,
+    )
+)

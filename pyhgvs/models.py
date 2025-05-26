@@ -2,38 +2,43 @@
 Models for representing genomic elements.
 """
 
-from __future__ import unicode_literals
-
-from collections import namedtuple
+from dataclasses import dataclass
 
 
-class Position(object):
+@dataclass
+class Position:
     """A position in the genome."""
 
-    def __init__(self, chrom, chrom_start, chrom_stop, is_forward_strand):
-        self.chrom = chrom
-        self.chrom_start = chrom_start
-        self.chrom_stop = chrom_stop
-        self.is_forward_strand = is_forward_strand
+    chrom: str
+    chrom_start: int
+    chrom_stop: int
+    is_forward_strand: bool
 
-    def __repr__(self):
-        return "<Position %s[%d:%d]>" % (
-            self.chrom, self.chrom_start, self.chrom_stop)
+    def __str__(self) -> str:
+        return f"{self.chrom}[{self.chrom_start}:{self.chrom_stop}]"
 
 
-class Gene(object):
-    def __init__(self, name):
-        self.name = name
+@dataclass
+class Gene:
+    name: str
 
 
-class Transcript(object):
+class Transcript:
     """RefGene Transcripts for hg19
 
     A gene may have multiple transcripts with different combinations of exons.
     """
 
-    def __init__(self, name, version, gene, tx_position, cds_position,
-                 is_default=False, exons=None):
+    def __init__(
+        self,
+        name: str,
+        version: int | None,
+        gene: str,
+        tx_position: Position,
+        cds_position: Position,
+        is_default=False,
+        exons: list["Exon"]|None = None,
+    ):
         self.name = name
         self.version = version
         self.gene = Gene(gene)
@@ -43,40 +48,36 @@ class Transcript(object):
         self.exons = exons if exons else []
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         if self.version is not None:
-            return '%s.%d' % (self.name, self.version)
+            return f"{self.name}.{self.version}"
         else:
             return self.name
 
     @property
-    def is_coding(self):
+    def is_coding(self) -> bool:
         # Coding transcripts have CDS with non-zero length.
-        return (self.cds_position.chrom_stop -
-                self.cds_position.chrom_start > 0)
+        return self.cds_position.chrom_stop - self.cds_position.chrom_start > 0
 
     @property
     def strand(self):
-        return ('+' if self.tx_position.is_forward_strand else '-')
+        return "+" if self.tx_position.is_forward_strand else "-"
 
     @property
     def coding_exons(self):
-        return [exon.get_as_interval(coding_only=True)
-                for exon in self.exons]
+        return [exon.get_as_interval(coding_only=True) for exon in self.exons]
 
 
-BED6Interval_base = namedtuple(
-    "BED6Interval_base", (
-        "chrom",
-        "chrom_start",
-        "chrom_end",
-        "name",
-        "score",
-        "strand"))
+@dataclass
+class BED6Interval:
+    chrom: str
+    chrom_start: int
+    chrom_end: int
+    name: str
+    score: str
+    strand: str
 
-
-class BED6Interval(BED6Interval_base):
-    def distance(self, offset):
+    def distance(self, offset: int):
         """Return the distance to the interval.
 
         if offset is inside the exon, distance is zero.
@@ -101,17 +102,14 @@ class BED6Interval(BED6Interval_base):
             return -end_distance
 
 
-class Exon(object):
-    def __init__(self, transcript, tx_position, exon_number):
+class Exon:
+    def __init__(self, transcript: Transcript, tx_position: Position, exon_number: int):
         self.transcript = transcript
         self.tx_position = tx_position
         self.exon_number = exon_number
+        self.name = f"{self.transcript.name}.{self.exon_number}"
 
-    @property
-    def get_exon_name(self):
-        return "%s.%d" % (self.transcript.name, self.exon_number)
-
-    def get_as_interval(self, coding_only=False):
+    def get_as_interval(self, coding_only=False) -> BED6Interval | None:
         """Returns the coding region for this exon as a BED6Interval.
 
         This function returns a BED6Interval objects containing  position
@@ -128,25 +126,27 @@ class Exon(object):
 
         # Get only exon coding region if requested
         if coding_only:
-            if (exon_stop <= self.transcript.cds_position.chrom_start or
-                    exon_start >= self.transcript.cds_position.chrom_stop):
+            if (
+                exon_stop <= self.transcript.cds_position.chrom_start
+                or exon_start >= self.transcript.cds_position.chrom_stop
+            ):
                 return None
-            exon_start = max(exon_start,
-                             self.transcript.cds_position.chrom_start)
+            exon_start = max(exon_start, self.transcript.cds_position.chrom_start)
             exon_stop = min(
                 max(exon_stop, self.transcript.cds_position.chrom_start),
-                self.transcript.cds_position.chrom_stop)
+                self.transcript.cds_position.chrom_stop,
+            )
 
         return BED6Interval(
             self.tx_position.chrom,
             exon_start,
             exon_stop,
-            self.get_exon_name,
-            '.',
+            self.name,
+            ".",
             self.strand,
         )
 
     @property
     def strand(self):
-        strand = '+' if self.tx_position.is_forward_strand else '-'
+        strand = "+" if self.tx_position.is_forward_strand else "-"
         return strand
