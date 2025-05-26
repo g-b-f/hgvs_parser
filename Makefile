@@ -1,6 +1,6 @@
 #! /usr/bin/make
 
-PACKAGE_NAME=pyhgvs
+PACKAGE_NAME=hgvs_parser
 SCRIPTS=bin/hgvs
 TEST_OUTPUT?=nosetests.xml
 

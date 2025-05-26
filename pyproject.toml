@@ -1,0 +1,23 @@
+[project]
+name = "hgvs-parser"
+version = "1.0.0"
+description = "Fork of pyhgvs"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pyfaidx>=0.8.1.4",
+    "pytest-mock>=3.14.0",
+]
+
+[tool.mypy]
+check_untyped_defs = true
+follow_untyped_imports = true
+exclude = [
+    "pyhgvs/tests"
+]
+
+[tool.ruff]
+extend-include = ["bin/"]
