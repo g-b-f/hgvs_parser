@@ -6,7 +6,7 @@ was over 5 years ago, and as the parent company counsyl
 [was bought out](https://www.genomeweb.com/business-news/myriad-genetics-acquire-counsyl-375m)
 at a similar time, it's unlikely to be updated ever again.
 
-The original README is below:
+The original README is below. The last three headings were updated for accuracy.
 
 # HGVS variant name parsing and generation
 
@@ -153,23 +153,23 @@ hgvs_name = hgvs.HGVSName('NM_000352.3:c.215-10A>G')
 
 ## Install
 
-This library can be installed using the `setup.py` file as follows:
+This library can be installed using the `uv` follows:
 
 ```sh
-python setup.py install
+uv sync
 ```
 
 ## Tests
 
-Test cases can be run by running
+Test cases can be run by running:
 
 ```sh
-python setup.py nosetests
+pytest
 ```
 
 ## Requirements
 
-This library requires at least Python 2.6, but otherwise has no
+This library requires at least Python **3.9**, but otherwise has no
 external dependencies.
 
 The library does assume that genome sequence is available through a `pyfaidx`
