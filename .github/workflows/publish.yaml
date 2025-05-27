@@ -6,18 +6,22 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: deploy
+    permissions:
+      id-token: write
 
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
       - name: Install project
         run: uv sync --locked --all-extras --dev
       - name: Run tests
-        run: uv run pytest pyhgvs/tests
-      - name: build
+        run: uv run pytest pyhgvs2/tests
+      - name: Build
         run: uv build
-      - name: publish
+      - name: Publish
         run: uv publish
-
+      - name: Test import 
+        run: uv run --with pyhgvs2 --no-project -- python -c "import pyhgvs2"
