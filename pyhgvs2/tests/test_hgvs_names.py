@@ -88,7 +88,7 @@ def test_name_to_variant():
     """
     genome = MockGenomeTestFile(
         db_filename="hg19.fa",
-        filename="pyhgvs/tests/data/test_name_to_variant.genome",
+        filename="pyhgvs2/tests/data/test_name_to_variant.genome",
         create_data=False,
     )
 
@@ -106,7 +106,7 @@ def test_variant_to_name():
     """
     genome = MockGenomeTestFile(
         db_filename="hg19.fa",
-        filename="pyhgvs/tests/data/test_variant_to_name.genome",
+        filename="pyhgvs2/tests/data/test_variant_to_name.genome",
         create_data=False,
     )
 
@@ -130,7 +130,7 @@ def test_variant_to_name_counsyl():
     """
     genome = MockGenomeTestFile(
         db_filename="hg19.fa",
-        filename="pyhgvs/tests/data/test_variant_to_name_counsyl.genome",
+        filename="pyhgvs2/tests/data/test_variant_to_name_counsyl.genome",
         create_data=False,
     )
 
@@ -164,7 +164,7 @@ def test_name_to_variant_refseqs():
     """
     Convert HGVS names to variant coordinates using refseqs directly.
     """
-    genome = SequenceFileDB("pyhgvs/tests/data/test_refseqs.fa")
+    genome = SequenceFileDB("pyhgvs2/tests/data/test_refseqs.fa")
 
     for hgvs_name, variant, name_canonical, var_canonical in _name_variants:
         if not var_canonical or "NM_" not in hgvs_name:
@@ -178,7 +178,7 @@ def test_invalid_coordinates():
     """
     Regression test for 17
     """
-    genome = SequenceFileDB("pyhgvs/tests/data/test_refseqs.fa")
+    genome = SequenceFileDB("pyhgvs2/tests/data/test_refseqs.fa")
     hgvs_name = "NC_000005.10:g.177421339_177421327delACTCGAGTGCTCC"
     with pytest.raises(InvalidHGVSName):
         parse_hgvs_name(hgvs_name, genome, get_transcript=get_transcript)

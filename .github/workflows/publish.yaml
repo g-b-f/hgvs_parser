@@ -18,10 +18,10 @@ jobs:
       - name: Install project
         run: uv sync --locked --all-extras --dev
       - name: Run tests
-        run: uv run pytest pyhgvs/tests
+        run: uv run pytest pyhgvs2/tests
       - name: Build
         run: uv build
       - name: Publish
         run: uv publish
       - name: Test import 
-        run: uv run --with <PACKAGE> --no-project -- python -c "import <PACKAGE>"
+        run: uv run --with pyhgvs2 --no-project -- python -c "import pyhgvs2"
