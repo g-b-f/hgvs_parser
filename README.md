@@ -102,7 +102,7 @@ and transcripts are read from a RefSeqGenes flat-file using methods
 provided by `hgvs`.
 
 ```python
-import pyhgvs as hgvs
+import pyhgvs2 as hgvs
 import hgvs.utils as hgvs_utils
 from pyfaidx import Fasta
 
@@ -136,7 +136,7 @@ The `hgvs` library can also perform just the parsing step and provide
 a parse tree of the HGVS name.
 
 ```python
-import pyhgvs as hgvs
+import pyhgvs2 as hgvs
 
 hgvs_name = hgvs.HGVSName('NM_000352.3:c.215-10A>G')
 
@@ -169,10 +169,10 @@ pytest
 
 ## Requirements
 
-This library requires at least Python **3.9**, but otherwise has no
+This library requires at least Python 3.9, but otherwise has no
 external dependencies.
 
 The library does assume that genome sequence is available through a `pyfaidx`
 compatible `Fasta` object. For an example of writing a wrapper for
 a different genome sequence back-end, see
-[hgvs.tests.genome.MockGenome](pyhgvs/tests/genome.py).
+[hgvs2.tests.genome.MockGenome](https://github.com/g-b-f/pyhgvs2/blob/master/pyhgvs2/tests/genome.py)

@@ -1,10 +1,14 @@
 [project]
 name = "pyhgvs2"
-version = "1.0.0"
+version = "1.0.1"
 description = "Fork of pyhgvs"
 readme = "README.md"
 requires-python = ">=3.9"
+keywords = ["hgvs", "bioinformatics", "genome", "variant", "DNA", "RNA"]
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/g-b-f/pyhgvs2"
 
 [dependency-groups]
 dev = [
