@@ -6,12 +6,12 @@ import sys
 
 from pyfaidx import Fasta
 
-import pyhgvs
-from pyhgvs import parse_hgvs_name
-from pyhgvs.utils import read_transcripts
-from pyhgvs.variants import normalize_variant
+import pyhgvs2
+from pyhgvs2 import parse_hgvs_name
+from pyhgvs2.utils import read_transcripts
+from pyhgvs2.variants import normalize_variant
 
-# Setup logging.
+# Setup logging
 logger = logging.getLogger("clinvar")
 formatter = logging.Formatter(
     "%(filename)s:%(lineno)s - %(name)s - %(levelname)s - %(message)s"
@@ -40,13 +40,11 @@ def get_sequence(genome, chrom, start, end):
 
 def get_transcript(name: str):
     """Get a transcript using its name or a gene name"""
-    transcript = transcripts.get(name)
-    if not transcript:
-        transcript = transcripts.get(gene2transcript.get(name))
+    transcript = transcripts.get(name, gene2transcript[name])
     return transcript
 
 
-def determine_allele(genome, hgvs_name):
+def determine_allele(genome, hgvs_name:str):
     """Determine the allele from a hgvs name."""
 
     messages = []
@@ -61,7 +59,7 @@ def determine_allele(genome, hgvs_name):
         AssertionError,
         KeyError,
         ValueError,
-        pyhgvs.InvalidHGVSName,
+        pyhgvs2.InvalidHGVSName,
     ) as error:
         messages.append(str(error))
         return None, messages
