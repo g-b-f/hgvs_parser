@@ -14,19 +14,18 @@ jobs:
           - "3.14"
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install uv and set the python version
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install uv, set python version
         uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
-      - uses: astral-sh/ruff-action@v3
-
+      - name: ruff
+        uses: astral-sh/ruff-action@v3
       - name: Install project
         run: uv sync --locked --all-extras --dev
-
       - name: Run tests
-        run: uv run pytest pyhgvs/tests
+        run: uv run pytest pyhgvs2/tests
 

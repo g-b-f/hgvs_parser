@@ -54,7 +54,7 @@ class TestVariant(TestCase):
         """
         genome = MockGenomeTestFile(
             db_filename="hg19.fa",
-            filename="pyhgvs/tests/data/test_variants.genome",
+            filename="pyhgvs2/tests/data/test_variants.genome",
             create_data=False,
         )
 
@@ -76,7 +76,7 @@ class TestVariant(TestCase):
         """
         genome = MockGenomeTestFile(
             db_filename="hg19.fa",
-            filename="pyhgvs/tests/data/test_variants.2.genome",
+            filename="pyhgvs2/tests/data/test_variants.2.genome",
             create_data=False,
         )
 
