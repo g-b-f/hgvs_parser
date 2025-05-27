@@ -8,14 +8,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
+      - name: checkout
+        uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
       - name: Install project
         run: uv sync --locked --all-extras --dev
       - name: Run tests
         run: uv run pytest pyhgvs/tests
+      - name: build
+        run: uv build
       - name: publish
         run: uv publish
 
