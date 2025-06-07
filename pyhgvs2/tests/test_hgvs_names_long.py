@@ -45,7 +45,7 @@ def test_name_to_variant_long():
         for i, line in enumerate(infile):
             row = line.rstrip().split("\t")
             chrom, offset, ref, alt, hgvs_name = row[:5]
-            offset = int(offset)
+            offset = int(offset)  # type:ignore[assignment]
 
             try:
                 hgvs_variant = parse_hgvs_name(
@@ -56,7 +56,7 @@ def test_name_to_variant_long():
 
             unnorm_variant = (chrom, offset, ref, alt)
             chrom, offset, ref, alts = normalize_variant(
-                chrom, offset, ref, [alt], genome
+                chrom, offset, ref, [alt], genome  # type:ignore[arg-type]
             ).variant
             variant = (chrom, offset, ref, alts[0])
 

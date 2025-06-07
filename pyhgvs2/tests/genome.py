@@ -5,13 +5,13 @@ from typing import Any, Optional, TextIO, Union, cast
 
 from ..variants import revcomp
 
-try:
-    from pyfaidx import Genome as SequenceFileDB
+# try:
+from pyfaidx import Fasta as SequenceFileDB
 
-    # Allow pyflakes to ignore redefinition in except clause.
-    SequenceFileDB
-except ImportError:
-    SequenceFileDB = None
+# Allow pyflakes to ignore redefinition in except clause.
+# SequenceFileDB
+# except ImportError:
+# SequenceFileDB = None
 
 
 class MockGenomeError(Exception):
@@ -65,7 +65,7 @@ class MockGenome:
         default_seq: if given, this base will always be returned if
             region is unavailable.
         """
-        self._chroms = {}
+        self._chroms: dict[str, MockChromosome] = {}
         self._lookup = lookup if lookup is not None else {}
         self._genome = None
         self._default_seq = default_seq
