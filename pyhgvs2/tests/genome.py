@@ -1,10 +1,9 @@
 import itertools
 import os
 from dataclasses import dataclass
-from typing import Any, Mapping, TextIO, cast, Union, Optional
+from typing import Any, Optional, TextIO, Union, cast
 
 from ..variants import revcomp
-
 
 try:
     from pyfaidx import Genome as SequenceFileDB
@@ -48,7 +47,11 @@ class MockChromosome:
 
 class MockGenome:
     def __init__(
-        self, lookup: Optional[Mapping]=None, filename=None, db_filename=None, default_seq=None
+        self,
+        lookup: Optional[dict] = None,
+        filename=None,
+        db_filename=None,
+        default_seq=None,
     ):
         """
         A mock genome object that provides a pygr compatible interface.
