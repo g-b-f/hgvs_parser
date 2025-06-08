@@ -94,9 +94,9 @@ BASES = BASE+
 """
 
 import re
-from typing import Literal, Optional, Callable, List, Tuple, cast
+from typing import Callable, List, Literal, Optional, Tuple
 
-from .models import Transcript, Exon, Position, GenomeType, BED6Interval
+from .models import Exon, GenomeType, Position, Transcript
 from .variants import justify_indel, normalize_variant, revcomp
 
 CHROM_PREFIX = "chr"
@@ -574,8 +574,8 @@ def genomic_to_cdna_coord(
 ) -> Optional[CDNACoord]:
     """Convert a genomic coordinate to a cDNA coordinate and offset."""
     exons = [exon.get_as_interval() for exon in get_exons(transcript)]
-    exons = cast( List[BED6Interval], filter(None, exons))
-    assert all([exon is not None for exon in exons])
+    # exons = cast(List[BED6Interval], filter(None, exons))
+    # assert all([exon is not None for exon in exons])
 
     if len(exons) == 0:
         return None
