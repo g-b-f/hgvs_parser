@@ -94,14 +94,15 @@ BASES = BASE+
 """
 
 import re
-from typing import Literal, Optional
+from typing import Callable, List, Literal, Optional, Tuple
 
-from .models import Transcript
+from .models import Exon, GenomeType, Position, Transcript
 from .variants import justify_indel, normalize_variant, revcomp
 
 CHROM_PREFIX = "chr"
 CDNA_START_CODON = "cdna_start"
 CDNA_STOP_CODON = "cdna_stop"
+
 
 class HGVSRegex:
     """
@@ -180,6 +181,7 @@ class HGVSRegex:
     PEP_EXTRA = r"(?P<extra>(|=|\?)(|fs))"
 
     # Peptide allele syntax
+    # fmt: off
     PEP_ALLELE = [
         # No peptide change
         # Example: Glu1161=
@@ -189,25 +191,10 @@ class HGVSRegex:
         PEP_REF + COORD_START + PEP_ALT + PEP_EXTRA,
         # Peptide indel
         # Example: Glu1161_Ser1164?fs
-        "(?P<delins>"
-        + PEP_REF
-        + COORD_START
-        + "_"
-        + PEP_REF2
-        + COORD_END
-        + PEP_EXTRA
-        + ")",
-        "(?P<delins>"
-        + PEP_REF
-        + COORD_START
-        + "_"
-        + PEP_REF2
-        + COORD_END
-        + PEP_ALT
-        + PEP_EXTRA
-        + ")",
+        "(?P<delins>" + PEP_REF + COORD_START + "_" + PEP_REF2 + COORD_END + PEP_EXTRA + ")",
+        "(?P<delins>" + PEP_REF + COORD_START + "_" + PEP_REF2 + COORD_END + PEP_ALT + PEP_EXTRA + ")",
     ]
-
+    # fmt: on
     PEP_ALLELE_REGEXES = [re.compile("^" + regex + "$") for regex in PEP_ALLELE]
 
     # Genomic allele syntax
@@ -244,7 +231,7 @@ class ChromosomeSubset:
     Allow direct access to a subset of the chromosome.
     """
 
-    def __init__(self, name, genome=None):
+    def __init__(self, name: str, genome=None):
         self.name = name
         self.genome = genome
 
@@ -258,9 +245,7 @@ class ChromosomeSubset:
             end -= self.genome.start
             return self.genome.genome[self.genome.seqid][start:end]
         else:
-            raise TypeError(
-                f"Expected a slice object but received a {type(key)}."
-            )
+            raise TypeError(f"Expected a slice object but received a {type(key)}.")
 
     def __repr__(self):
         return f'ChromosomeSubset("{self.name}")'
@@ -344,7 +329,7 @@ class CDNACoord:
             self.offset = offset
             self.landmark = landmark
 
-    def parse(self, coord_text):
+    def parse(self, coord_text: str) -> "CDNACoord":
         """
         Parse a HGVS formatted cDNA coordinate.
         """
@@ -387,7 +372,7 @@ class CDNACoord:
         if self.offset < 0:
             offset = str(self.offset)
         elif self.offset > 0:
-            offset = "+"+str(self.offset)
+            offset = "+" + str(self.offset)
         else:
             offset = ""
 
@@ -444,7 +429,7 @@ def get_refseq_type(name: str) -> Optional[str]:
     return REFSEQ_PREFIX_LOOKUP.get(prefix, (None, ""))[0]
 
 
-def get_exons(transcript: Transcript):
+def get_exons(transcript: Transcript) -> List[Exon]:
     """Yield exons in coding order."""
     transcript_strand = transcript.tx_position.is_forward_strand
     if hasattr(transcript.exons, "select_related"):
@@ -465,7 +450,7 @@ def get_coding_exons(transcript: Transcript):
             yield region
 
 
-def get_utr5p_size(transcript):
+def get_utr5p_size(transcript: Transcript):
     """Return the size of the 5prime UTR of a transcript."""
 
     transcript_strand = transcript.tx_position.is_forward_strand
@@ -493,7 +478,7 @@ def get_utr5p_size(transcript):
         return cdna_len + (exon_end - start_codon - 1)
 
 
-def find_stop_codon(exons, cds_position):
+def find_stop_codon(exons: list["Exon"], cds_position: Position):
     """Return the position along the cDNA of the base after the stop codon."""
     if cds_position.is_forward_strand:
         stop_pos = cds_position.chrom_stop
@@ -514,7 +499,7 @@ def find_stop_codon(exons, cds_position):
     raise ValueError("Stop codon is not in any of the exons")
 
 
-def get_genomic_sequence(genome, chrom, start, end):
+def get_genomic_sequence(genome: GenomeType, chrom: str, start: int, end: int):
     """
     Return a sequence for the genomic region.
 
@@ -584,9 +569,13 @@ def cdna_to_genomic_coord(transcript, coord):
         return exon_end - (pos - cdna_start) - coord.offset
 
 
-def genomic_to_cdna_coord(transcript, genomic_coord):
+def genomic_to_cdna_coord(
+    transcript: Transcript, genomic_coord: int
+) -> Optional[CDNACoord]:
     """Convert a genomic coordinate to a cDNA coordinate and offset."""
     exons = [exon.get_as_interval() for exon in get_exons(transcript)]
+    # exons = cast(List[BED6Interval], filter(None, exons))
+    # assert all([exon is not None for exon in exons])
 
     if len(exons) == 0:
         return None
@@ -603,6 +592,7 @@ def genomic_to_cdna_coord(transcript, genomic_coord):
 
     coding_offset = 0
     for exon in exons:
+        assert exon is not None
         exon_length = exon.chrom_end - exon.chrom_start
         distance = exon.distance(genomic_coord)
         if abs(distance) == min_distance_to_exon:
@@ -698,7 +688,9 @@ def get_allele(hgvs, genome, transcript=None):
 _indel_mutation_types = set(["ins", "del", "dup", "delins"])
 
 
-def get_vcf_allele(hgvs, genome, transcript=None):
+def get_vcf_allele(
+    hgvs: "HGVSName", genome: GenomeType, transcript: Optional[Transcript] = None
+) -> Tuple[str, int, int, str, str]:
     """Get an VCF-style allele from a HGVSName, a genome, and a transcript."""
     chrom, start, end = hgvs.get_vcf_coords(transcript)
     _, alt = hgvs.get_ref_alt(
@@ -789,7 +781,7 @@ class HGVSName:
         if name:
             self.parse(name)
 
-    def parse(self, name):
+    def parse(self, name: str):
         """Parse a HGVS name."""
         # Does HGVS name have transcript/gene prefix?
         if ":" in name:
@@ -805,7 +797,7 @@ class HGVSName:
         self.parse_prefix(prefix, self.kind)
         self._validate()
 
-    def parse_prefix(self, prefix, kind):
+    def parse_prefix(self, prefix: str, kind):
         """
         Parse a HGVS prefix (gene/transcript/chromosome).
 
@@ -859,7 +851,7 @@ class HGVSName:
         # Assume gene name.
         self.gene = prefix
 
-    def parse_allele(self, allele):
+    def parse_allele(self, allele: str):
         """
         Parse a HGVS allele description.
 
@@ -1041,7 +1033,7 @@ class HGVSName:
     def __unicode__(self):
         return self.format()
 
-    def format(self, use_prefix=True, use_gene=True, use_counsyl=False):
+    def format(self, use_prefix=True, use_gene=True, use_counsyl=False) -> str:
         """Generate a HGVS name as a string."""
 
         if self.kind == "c":
@@ -1060,7 +1052,7 @@ class HGVSName:
         else:
             return allele
 
-    def format_prefix(self, use_gene=True):
+    def format_prefix(self, use_gene=True) -> str:
         """
         Generate HGVS trancript/gene prefix.
 
@@ -1084,7 +1076,7 @@ class HGVSName:
             else:
                 return ""
 
-    def format_cdna_coords(self):
+    def format_cdna_coords(self) -> str:
         """
         Generate HGVS cDNA coordinates string.
         """
@@ -1094,7 +1086,7 @@ class HGVSName:
         else:
             return f"{self.cdna_start}_{self.cdna_end}"
 
-    def format_dna_allele(self):
+    def format_dna_allele(self) -> str:
         """
         Generate HGVS DNA allele.
         """
@@ -1129,7 +1121,7 @@ class HGVSName:
         else:
             raise AssertionError(f"unknown mutation type: '{self.mutation_type}'")
 
-    def format_cdna(self):
+    def format_cdna(self) -> str:
         """
         Generate HGVS cDNA allele.
 
@@ -1139,7 +1131,7 @@ class HGVSName:
         """
         return self.format_cdna_coords() + self.format_dna_allele()
 
-    def format_protein(self):
+    def format_protein(self) -> str:
         """
         Generate HGVS protein name.
 
@@ -1181,7 +1173,7 @@ class HGVSName:
         else:
             raise NotImplementedError("protein name formatting.")
 
-    def format_coords(self):
+    def format_coords(self) -> str:
         """
         Generate HGVS cDNA coordinates string.
         """
@@ -1190,7 +1182,7 @@ class HGVSName:
         else:
             return f"{self.start}_{self.end}"
 
-    def format_genome(self):
+    def format_genome(self) -> str:
         """
         Generate HGVS genomic allele.
 
@@ -1200,9 +1192,13 @@ class HGVSName:
         """
         return self.format_coords() + self.format_dna_allele()
 
-    def get_coords(self, transcript=None):
+    def get_coords(
+        self, transcript: Optional[Transcript] = None
+    ) -> tuple[str, int, int]:
         """Return genomic coordinates of reference allele."""
         if self.kind == "c":
+            if transcript is None:
+                raise ValueError("must pass a transcript")
             chrom = transcript.tx_position.chrom
             start = cdna_to_genomic_coord(transcript, self.cdna_start)
             end = cdna_to_genomic_coord(transcript, self.cdna_end)
@@ -1233,11 +1229,12 @@ class HGVSName:
 
         else:
             raise NotImplementedError(
-                f'Coordinates are not available for this kind of HGVS name "{self.kind}"')
+                f'Coordinates are not available for this kind of HGVS name "{self.kind}"'
+            )
 
         return chrom, start, end
 
-    def get_vcf_coords(self, transcript=None):
+    def get_vcf_coords(self, transcript=None) -> tuple[str, int, int]:
         """Return genomic coordinates of reference allele in VCF-style."""
         chrom, start, end = self.get_coords(transcript)
 
@@ -1251,26 +1248,30 @@ class HGVSName:
             raise NotImplementedError(f"Unknown mutation_type '{self.mutation_type}'")
         return chrom, start, end
 
-    def get_ref_alt(self, is_forward_strand=True):
+    def get_ref_alt(self, is_forward_strand=True) -> tuple[str, str]:
         """Return reference and alternate alleles."""
         if self.kind == "p":
             raise NotImplementedError(
                 "get_ref_alt is not implemented for protein HGVS names"
             )
-        alleles = [self.ref_allele, self.alt_allele]
+
+        ref, alt = self.ref_allele, self.alt_allele
 
         # Represent duplications are inserts.
         if self.mutation_type == "dup":
-            alleles[0] = ""
-            alleles[1] = alleles[1][: len(alleles[1]) // 2]
+            alleles = ("", alt[: len(alt) // 2])
+        else:
+            alleles = (ref, alt)
 
         if is_forward_strand:
             return alleles
         else:
-            return tuple(map(revcomp, alleles))
+            return tuple(map(revcomp, alleles))  # type: ignore[return-value]
 
 
-def hgvs_justify_dup(chrom, offset, ref, alt, genome):
+def hgvs_justify_dup(
+    chrom: str, offset: int, ref: str, alt: str, genome: GenomeType
+) -> tuple[str, int, str, str, str]:
     """
     Determines if allele is a duplication and justifies.
 
@@ -1324,7 +1325,9 @@ def hgvs_justify_dup(chrom, offset, ref, alt, genome):
     return chrom, offset, ref, alt, mutation_type
 
 
-def hgvs_justify_indel(chrom, offset, ref, alt, strand, genome):
+def hgvs_justify_indel(
+    chrom: str, offset: int, ref: str, alt: str, strand: str, genome: GenomeType
+) -> Tuple[str, int, str, str]:
     """
     3' justify an indel according to the HGVS standard.
 
@@ -1368,7 +1371,14 @@ def hgvs_justify_indel(chrom, offset, ref, alt, strand, genome):
     return chrom, offset, ref, alt
 
 
-def hgvs_normalize_variant(chrom, offset, ref, alt, genome, transcript=None):
+def hgvs_normalize_variant(
+    chrom: str,
+    offset: int,
+    ref: str,
+    alt: str,
+    genome: GenomeType,
+    transcript: Optional[Transcript] = None,
+):
     """Convert VCF-style variant to HGVS-style."""
     if len(ref) == len(alt) == 1:
         if ref == alt:
@@ -1395,10 +1405,10 @@ def hgvs_normalize_variant(chrom, offset, ref, alt, genome, transcript=None):
 
 
 def parse_hgvs_name(
-    hgvs_name,
-    genome,
+    hgvs_name: str,
+    genome: GenomeType,
     transcript=None,
-    get_transcript=lambda name: None,
+    get_transcript: Optional[Callable] = None,
     flank_length=30,
     normalize=True,
     lazy=False,
@@ -1447,8 +1457,15 @@ def parse_hgvs_name(
 
 
 def variant_to_hgvs_name(
-    chrom, offset, ref, alt, genome, transcript, max_allele_length=4, use_counsyl=False
-):
+    chrom: str,
+    offset: int,
+    ref: str,
+    alt: str,
+    genome: GenomeType,
+    transcript: Transcript,
+    max_allele_length=4,
+    use_counsyl=False,
+) -> HGVSName:
     """
     Populate a HGVSName from a genomic coordinate.
 
@@ -1531,17 +1548,17 @@ def variant_to_hgvs_name(
 
 
 def format_hgvs_name(
-    chrom,
-    offset,
-    ref,
-    alt,
-    genome,
-    transcript,
+    chrom: str,
+    offset: int,
+    ref: str,
+    alt: str,
+    genome: GenomeType,
+    transcript: Transcript,
     use_prefix=True,
     use_gene=True,
     use_counsyl=False,
     max_allele_length=4,
-):
+) -> str:
     """
     Generate a HGVS name from a genomic coordinate.
 

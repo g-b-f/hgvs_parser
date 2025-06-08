@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from ..variants import normalize_variant
 from .genome import MockGenomeTestFile
+from typing import Literal
 
 _genome_seq = dict(
     [
@@ -15,9 +16,10 @@ _genome_seq = dict(
         (("chr17", 41246249, 41246279), "GCCAGTAAGTCTATTTTCTCTGAAGAACCA"),
     ]
 )
+ChromType = tuple[str, int, str, list[str]]
+NormTest = tuple[ChromType, ChromType, Literal["left", "right"]]
 
-
-_normalize_tests = [
+_normalize_tests: list[NormTest] = [
     # Simple SNP.
     (("chr17", 41246250, "G", ["C"]), ("chr17", 41246250, "G", ["C"]), "left"),
     # Left-align and 1bp pad.

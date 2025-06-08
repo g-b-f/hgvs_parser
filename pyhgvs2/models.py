@@ -3,8 +3,9 @@ Models for representing genomic elements.
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Mapping
 
+GenomeType = Mapping[str, str]
 
 @dataclass
 class Position:

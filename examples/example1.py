@@ -27,16 +27,16 @@ The following output should be displayed:
 
 """
 
+import pyhgvs2.utils as hgvs_utils
 from pyfaidx import Fasta
 
-import pyhgvs as hgvs
-import pyhgvs.utils as hgvs_utils
+import pyhgvs2 as hgvs
 
 # Read genome sequence using pyfaidx.
 genome = Fasta("/tmp/hg19.fa")
 
 # Read RefSeq transcripts into a python dict.
-with open("pyhgvs/data/genes.refGene") as infile:
+with open("pyhgvs2/data/genes.refGene") as infile:
     transcripts = hgvs_utils.read_transcripts(infile)
 
 

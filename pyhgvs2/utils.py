@@ -2,12 +2,12 @@
 Helper functions.
 """
 
-from typing import Mapping
+from typing import Mapping, TextIO
 
 from .models import Exon, Position, Transcript
 
 
-def read_refgene(infile):
+def read_refgene(infile: TextIO):
     """
     Iterate through a refGene file.
 
@@ -16,7 +16,7 @@ def read_refgene(infile):
 
     Column definitions:
     0. uint undocumented id
-    1. string name;             "Name of gene (usually transcript_id from GTF)"
+    1. string name;                 "Name of gene (usually transcript_id from GTF)"
     2. string chrom;                "Chromosome name"
     3. char[1] strand;              "+ or - for strand"
     4. uint txStart;                "Transcription start position"
@@ -33,13 +33,12 @@ def read_refgene(infile):
     15. lstring exonFrames;         "Exon frame offsets {0,1,2}"
     """
     for line in infile:
-        # Skip comments.
-        if line.startswith("#"):
+        if line.startswith("#"):  # Skip comments
             continue
         row = line.rstrip("\n").split("\t")
         if len(row) != 16:
             raise ValueError(
-                "File has incorrect number of columns " "in at least one line."
+                "File has incorrect number of columns in at least one line."
             )
 
         # Skip trailing ,

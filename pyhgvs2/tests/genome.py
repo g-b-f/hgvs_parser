@@ -1,18 +1,17 @@
 import itertools
 import os
 from dataclasses import dataclass
-from typing import Any, Mapping, TextIO, cast, Union, Optional
+from typing import Any, Optional, TextIO, Union, cast
 
 from ..variants import revcomp
 
+# try:
+from pyfaidx import Fasta as SequenceFileDB
 
-try:
-    from pyfaidx import Genome as SequenceFileDB
-
-    # Allow pyflakes to ignore redefinition in except clause.
-    SequenceFileDB
-except ImportError:
-    SequenceFileDB = None
+# Allow pyflakes to ignore redefinition in except clause.
+# SequenceFileDB
+# except ImportError:
+# SequenceFileDB = None
 
 
 class MockGenomeError(Exception):
@@ -48,7 +47,11 @@ class MockChromosome:
 
 class MockGenome:
     def __init__(
-        self, lookup: Optional[Mapping]=None, filename=None, db_filename=None, default_seq=None
+        self,
+        lookup: Optional[dict] = None,
+        filename=None,
+        db_filename=None,
+        default_seq=None,
     ):
         """
         A mock genome object that provides a pygr compatible interface.
@@ -62,7 +65,7 @@ class MockGenome:
         default_seq: if given, this base will always be returned if
             region is unavailable.
         """
-        self._chroms = {}
+        self._chroms: dict[str, MockChromosome] = {}
         self._lookup = lookup if lookup is not None else {}
         self._genome = None
         self._default_seq = default_seq

@@ -7,6 +7,10 @@ requires-python = ">=3.9"
 keywords = ["hgvs", "bioinformatics", "genome", "variant", "DNA", "RNA"]
 dependencies = []
 
+[project.scripts]
+spam-cli = "bin:hgvs"
+
+
 [project.urls]
 Repository = "https://github.com/g-b-f/pyhgvs2"
 
@@ -24,7 +28,6 @@ follow_untyped_imports = true
 exclude = [
     "pyhgvs/tests"
 ]
-
 [tool.ruff]
 extend-include = ["bin/"]
 

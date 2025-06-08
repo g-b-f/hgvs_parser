@@ -3,9 +3,16 @@ from io import StringIO
 import pytest
 from pyfaidx import Fasta as SequenceFileDB
 
-from .. import (CDNA_STOP_CODON, CDNACoord, HGVSName, InvalidHGVSName,
-                cdna_to_genomic_coord, format_hgvs_name, genomic_to_cdna_coord,
-                parse_hgvs_name)
+from .. import (
+    CDNA_STOP_CODON,
+    CDNACoord,
+    HGVSName,
+    InvalidHGVSName,
+    cdna_to_genomic_coord,
+    format_hgvs_name,
+    genomic_to_cdna_coord,
+    parse_hgvs_name,
+)
 from ..utils import read_transcripts
 from .genome import MockGenomeTestFile
 
@@ -25,7 +32,7 @@ def test_parse_cdna_coord():
         assert CDNACoord(string=text) == expected
 
 
-def test_fromat_cdna_coord():
+def test_format_cdna_coord():
     """
     Format cDNA coordinates.
     """
