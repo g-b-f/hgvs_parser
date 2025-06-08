@@ -8,6 +8,7 @@ from pyfaidx import Fasta
 
 import pyhgvs2
 from pyhgvs2 import parse_hgvs_name
+import pyhgvs2.exceptions
 from pyhgvs2.utils import read_transcripts
 from pyhgvs2.variants import normalize_variant
 
@@ -59,7 +60,7 @@ def determine_allele(genome, hgvs_name:str):
         AssertionError,
         KeyError,
         ValueError,
-        pyhgvs2.InvalidHGVSName,
+        pyhgvs2.exceptions.InvalidHGVSName,
     ) as error:
         messages.append(str(error))
         return None, messages
