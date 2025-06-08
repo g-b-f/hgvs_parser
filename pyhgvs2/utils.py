@@ -2,7 +2,7 @@
 Helper functions.
 """
 
-from typing import Mapping, TextIO
+from typing import Mapping, TextIO, Optional
 
 from .models import Exon, Position, Transcript
 
@@ -121,3 +121,4 @@ def read_transcripts(refgene_file) -> dict[str, Transcript]:
         transcripts[trans.full_name] = trans
 
     return transcripts
+
