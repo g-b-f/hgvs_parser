@@ -3,10 +3,15 @@ from typing import Optional
 from .regex import HGVSRegex
 import re
 from .constants import CHROM_PREFIX
-from .exceptions import InvalidHGVSName
+from .exceptions import (
+    NonMatchingAlleleError,
+    StartGreaterThanEndError,
+    InvalidKindError,
+)
 from .models import CDNACoord, Transcript
 from .lookups import get_refseq_type, cdna_to_genomic_coord
 from .variants import revcomp
+
 
 class HGVSName:
     """
@@ -144,9 +149,7 @@ class HGVSName:
           Genomic indel: g.1000100_1000102delATG
         """
         if "." not in allele:
-            raise InvalidHGVSName(
-                allele, "allele", 'expected kind "c.", "p.", "g.", etc'
-            )
+            raise InvalidKindError(allele)
 
         # Determine HGVS name kind.
         kind, details = allele.split(".", 1)
@@ -207,7 +210,7 @@ class HGVSName:
                     self.alt_allele = self.ref_allele
                 return
 
-        raise InvalidHGVSName(details, "cDNA allele")
+        raise NonMatchingAlleleError(details, "cDNA")
 
     def parse_protein(self, details: str):
         """
@@ -246,7 +249,7 @@ class HGVSName:
                 self.pep_extra = groups.get("extra")
                 return
 
-        raise InvalidHGVSName(details, "protein allele")
+        raise NonMatchingAlleleError(details, "protein")
 
     def parse_genome(self, details: str):
         """
@@ -294,14 +297,14 @@ class HGVSName:
                     self.alt_allele = self.ref_allele
                 return
 
-        raise InvalidHGVSName(details, "genomic allele")
+        raise NonMatchingAlleleError(details, "genomic")
 
     def _validate(self):
         """
         Check for internal inconsistencies in representation
         """
         if self.start > self.end:
-            raise InvalidHGVSName(reason="Coordinates are nonincreasing")
+            raise StartGreaterThanEndError(self.name)
 
     def __repr__(self):
         try:
@@ -312,7 +315,7 @@ class HGVSName:
     def __unicode__(self):
         return self.format()
 
-    def format(self, use_prefix=True, use_gene=True, use_counsyl=False) -> str:
+    def format(self, use_prefix=True, use_gene=True) -> str:
         """Generate a HGVS name as a string."""
 
         if self.kind == "c":
@@ -398,7 +401,7 @@ class HGVSName:
             return self.mutation_type
 
         else:
-            raise AssertionError(f"unknown mutation type: '{self.mutation_type}'")
+            raise ValueError(f"unknown mutation type: '{self.mutation_type}'")
 
     def format_cdna(self) -> str:
         """
