@@ -7,8 +7,8 @@ import sys
 from pyfaidx import Fasta
 
 import pyhgvs2
-from pyhgvs2 import parse_hgvs_name
 import pyhgvs2.exceptions
+from pyhgvs2 import parse_hgvs_name
 from pyhgvs2.utils import read_transcripts
 from pyhgvs2.variants import normalize_variant
 

@@ -1,8 +1,9 @@
 from typing import Callable, Literal, Optional, Tuple
-from .models import GenomeType, Transcript, GenomeSubset
-from .variants import justify_indel, normalize_variant, revcomp
+
 from .hgvsg_name import HGVSName
-from .lookups import get_vcf_allele, genomic_to_cdna_coord
+from .lookups import genomic_to_cdna_coord, get_vcf_allele
+from .models import GenomeSubset, GenomeType, Transcript
+from .variants import justify_indel, normalize_variant, revcomp
 
 
 def hgvs_justify_dup(

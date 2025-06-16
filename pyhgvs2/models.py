@@ -2,12 +2,14 @@
 Models for representing genomic elements.
 """
 
-from dataclasses import dataclass
-from typing import Optional, Mapping
-from .constants import CDNA_START_CODON, CDNA_STOP_CODON
 import re
+from dataclasses import dataclass
+from typing import Mapping, Optional
+
+from .constants import CDNA_START_CODON, CDNA_STOP_CODON
 
 GenomeType = Mapping[str, str]
+
 
 @dataclass
 class Position:
@@ -154,7 +156,6 @@ class Exon:
     def strand(self):
         strand = "+" if self.tx_position.is_forward_strand else "-"
         return strand
-
 
 
 class ChromosomeSubset:

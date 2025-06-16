@@ -38,7 +38,6 @@ def get_refseq_type(name: str) -> Optional[str]:
     return REFSEQ_PREFIX_LOOKUP.get(prefix, (None, ""))[0]
 
 
-
 def get_exons(transcript: Transcript) -> List[Exon]:
     """Yield exons in coding order."""
     transcript_strand = transcript.tx_position.is_forward_strand

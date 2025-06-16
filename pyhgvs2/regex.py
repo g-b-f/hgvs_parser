@@ -1,5 +1,7 @@
 import re
+
 # from .constants import CHROM_PREFIX, CDNA_STOP_CODON, CDNA_START_CODON
+
 
 class HGVSRegex:
     """

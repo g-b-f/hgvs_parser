@@ -2,10 +2,10 @@
 Helper functions.
 """
 
-from typing import TextIO, Generator, cast
+from typing import Generator, List, TextIO, Tuple, TypedDict, cast
 
 from .models import Exon, Position, Transcript
-from typing import TypedDict, List, Tuple
+
 
 class RefGeneRecord(TypedDict):
     chrom: str
@@ -18,6 +18,7 @@ class RefGeneRecord(TypedDict):
     gene_name: str
     exons: List[Tuple[int, int]]
     exon_frames: List[int]
+
 
 def read_refgene(infile: TextIO) -> Generator[RefGeneRecord]:
     """
@@ -134,4 +135,3 @@ def read_transcripts(refgene_file: TextIO) -> dict[str, Transcript]:
         transcripts[trans.full_name] = trans
 
     return transcripts
-

@@ -1,15 +1,15 @@
+import re
 from typing import Optional
 
-from .regex import HGVSRegex
-import re
 from .constants import CHROM_PREFIX
 from .exceptions import (
+    InvalidKindError,
     NonMatchingAlleleError,
     StartGreaterThanEndError,
-    InvalidKindError,
 )
+from .lookups import cdna_to_genomic_coord, get_refseq_type
 from .models import CDNACoord, Transcript
-from .lookups import get_refseq_type, cdna_to_genomic_coord
+from .regex import HGVSRegex
 from .variants import revcomp
 
 
