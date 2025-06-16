@@ -201,7 +201,6 @@ def variant_to_hgvs_name(
     genome: GenomeType,
     transcript: Transcript,
     max_allele_length=4,
-    use_counsyl=False,
 ) -> HGVSName:
     """
     Populate a HGVSName from a genomic coordinate.
@@ -238,7 +237,7 @@ def variant_to_hgvs_name(
             mutation_type in ("del", "delins", "dup") and len(ref) == 1
         )
 
-        if mutation_type == ">" or (use_counsyl and is_single_base_indel):
+        if mutation_type == ">" or is_single_base_indel:
             # Use a single coordinate.
             hgvs.cdna_start = genomic_to_cdna_coord(transcript, offset)
             hgvs.cdna_end = hgvs.cdna_start
@@ -317,8 +316,8 @@ def format_hgvs_name(
         genome,
         transcript,
         max_allele_length=max_allele_length,
-        use_counsyl=use_counsyl,
     )
     return hgvs.format(
-        use_prefix=use_prefix, use_gene=use_gene, use_counsyl=use_counsyl
+        use_prefix=use_prefix,
+        use_gene=use_gene,
     )
