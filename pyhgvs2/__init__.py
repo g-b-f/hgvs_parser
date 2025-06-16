@@ -93,5 +93,22 @@ BASES = BASE+
 
 """
 
-from .functions import *
-from .hgvsg_name import HGVSName as HGVSName
+from .functions import (
+    format_hgvs_name,
+    hgvs_justify_dup,
+    hgvs_justify_indel,
+    hgvs_normalize_variant,
+    parse_hgvs_name,
+    variant_to_hgvs_name,
+)
+from .hgvsg_name import HGVSName
+
+__all__ = [
+    "HGVSName",
+    "hgvs_justify_dup",
+    "hgvs_justify_indel",
+    "hgvs_normalize_variant",
+    "parse_hgvs_name",
+    "variant_to_hgvs_name",
+    "format_hgvs_name",
+]
