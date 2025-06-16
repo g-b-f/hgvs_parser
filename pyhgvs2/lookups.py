@@ -2,11 +2,11 @@
 Given X, get Y
 """
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, cast
 
 from .constants import CDNA_START_CODON, CDNA_STOP_CODON
 from .hgvsg_name import HGVSName
-from .models import CDNACoord, Exon, GenomeType, Position, Transcript
+from .models import BED6Interval, CDNACoord, Exon, GenomeType, Position, Transcript
 
 # The RefSeq standard for naming contigs/transcripts/proteins:
 # http://www.ncbi.nlm.nih.gov/books/NBK21091/table/ch18.T.refseq_accession_numbers_and_mole/?report=objectonly  # nopep8
@@ -186,9 +186,9 @@ def genomic_to_cdna_coord(
     transcript: Transcript, genomic_coord: int
 ) -> Optional[CDNACoord]:
     """Convert a genomic coordinate to a cDNA coordinate and offset."""
-    exons = [exon.get_as_interval() for exon in get_exons(transcript)]
-    # exons = cast(List[BED6Interval], filter(None, exons))
-    # assert all([exon is not None for exon in exons])
+    exons = cast(
+        List[BED6Interval], [exon.get_as_interval() for exon in get_exons(transcript)]
+    )
 
     if len(exons) == 0:
         return None
