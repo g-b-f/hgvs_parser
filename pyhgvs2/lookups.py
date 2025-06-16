@@ -2,7 +2,11 @@
 Given X, get Y
 """
 
-from typing import Optional
+from typing import List, Optional, Tuple
+
+from .constants import CDNA_START_CODON, CDNA_STOP_CODON
+from .hgvsg_name import HGVSName
+from .models import CDNACoord, Exon, GenomeType, Position, Transcript
 
 # The RefSeq standard for naming contigs/transcripts/proteins:
 # http://www.ncbi.nlm.nih.gov/books/NBK21091/table/ch18.T.refseq_accession_numbers_and_mole/?report=objectonly  # nopep8
@@ -120,7 +124,7 @@ def get_genomic_sequence(genome: GenomeType, chrom: str, start: int, end: int):
         return str(genome[str(chrom)][start - 1 : end]).upper()
 
 
-def cdna_to_genomic_coord(transcript, coord):
+def cdna_to_genomic_coord(transcript: Transcript, coord: CDNACoord):
     """Convert a HGVS cDNA coordinate to a genomic coordinate."""
     transcript_strand = transcript.tx_position.is_forward_strand
     exons = get_exons(transcript)

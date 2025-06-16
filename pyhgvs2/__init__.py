@@ -94,4 +94,4 @@ BASES = BASE+
 """
 
 from .functions import *
-from .hgvsg_name import HGVSName
+from .hgvsg_name import HGVSName as HGVSName
