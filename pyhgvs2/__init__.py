@@ -101,6 +101,8 @@ from .functions import (
     parse_hgvs_name,
     variant_to_hgvs_name,
 )
+
+from .models import CDNACoord
 from .hgvsg_name import HGVSName
 
 __all__ = [
@@ -111,4 +113,5 @@ __all__ = [
     "parse_hgvs_name",
     "variant_to_hgvs_name",
     "format_hgvs_name",
+    "CDNACoord"
 ]

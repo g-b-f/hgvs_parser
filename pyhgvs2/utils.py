@@ -20,7 +20,7 @@ class RefGeneRecord(TypedDict):
     exon_frames: List[int]
 
 
-def read_refgene(infile: TextIO) -> Generator[RefGeneRecord]:
+def read_refgene(infile: TextIO) -> Generator[RefGeneRecord, None, None]:
     """
     Iterate through a refGene file.
 

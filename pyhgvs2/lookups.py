@@ -3,9 +3,11 @@ Given X, get Y
 """
 
 from typing import List, Optional, Tuple, cast
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .hgvsg_name import HGVSName
 
 from .constants import CDNA_START_CODON, CDNA_STOP_CODON
-from .hgvsg_name import HGVSName
 from .models import BED6Interval, CDNACoord, Exon, GenomeType, Position, Transcript
 
 # The RefSeq standard for naming contigs/transcripts/proteins:
