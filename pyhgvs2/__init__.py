@@ -93,6 +93,5 @@ BASES = BASE+
 
 """
 
-# from .functions import hgvs_justify_dup,hgvs_justify_indel,hgvs_normalize_variant,variant_to_hgvs_name
 from .functions import *
 from .hgvsg_name import HGVSName
